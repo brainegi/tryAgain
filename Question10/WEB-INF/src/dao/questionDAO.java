@@ -1,13 +1,9 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
-import bean.Question;
+import bean.*;
 
 public class questionDAO {
 
@@ -30,61 +26,95 @@ public class questionDAO {
 		}
 	}
 
-	/**
-	 * @author harashima
-	 * @return list お問合せ内容の全検索
-	 */
-	public ArrayList<Question> selectAll() {
+	// 問い合わせ内容を登録
+	public void insert(Question question) {
+
 		Connection con = null;
 		Statement smt = null;
 
+		//SQL文
+		String sql ="INSERT INTO question(name,age,sex,adress,mail,selected,text,date)"
+				+ " VALUES ('"
+				+ question.getName() + "','" + question.getAge() + "','"
+				+ question.getSex() + "','" + question.getAdress() + "','"
+				+ question.getMail() + "','" + question.getSelected() + "','"
+				+ question.getText() + "','" + question.getDate() + "')";
+
 		try {
 
-			// データ接続→SQL文送信（結果受け取り）
+			//送信準備
 			con = getConnection();
 			smt = con.createStatement();
-			String sql = "SELECT * FROM question";
-			ArrayList<Question> list = new ArrayList<Question>();
 
-			ResultSet rs = smt.executeQuery(sql);
+			//SQLを用いて接続
+			smt.executeUpdate(sql);
 
-			// 検索結果をDTOに格納→ArrayListに格納
-			while (rs.next()) {
-				Question qObj = new Question();
-				qObj.setNum(rs.getInt("num"));
-				qObj.setName(rs.getString("name"));
-				qObj.setAge(rs.getString("age"));
-				qObj.setSex(rs.getString("sex"));
-				qObj.setAdress(rs.getString("adress"));
-				qObj.setMail(rs.getString("mail"));
-				qObj.setSelected(rs.getString("selected"));
-				qObj.setText(rs.getString("text"));
-				qObj.setDate(rs.getString("date"));
-				list.add(qObj);
-			}
-
-			// 返却
-			return list;
-
-		} catch (SQLException e) {
+		} catch(Exception e) {
 			throw new IllegalStateException(e);
 
 		} finally {
-			if (smt != null) {
-				try {
-					smt.close();
-				} catch (SQLException ignore) {
-				}
+			if(smt != null) {
+				try {smt.close();} catch(SQLException ignore) {}
 			}
-			if (con != null) {
-				try {
-					con.close();
-				} catch (SQLException ignore) {
-				}
+
+			if(con != null) {
+				try {con.close();} catch(SQLException ignore) {}
 			}
 
 		}
 
+	}
+
+	//詳細画面表示
+	public Question selectBynum(String num) {
+
+		//DB接続用
+		Connection con = null;
+		Statement smt = null;
+
+		//返却用オブジェクト生成
+		Question question = new Question();
+
+		//SQL文
+		String sql ="SELECT * FROM question WHERE num ='" + num + "'";
+
+		try {
+
+			//送信準備
+			con = getConnection();
+			smt = con.createStatement();
+
+			//SQL文を用いて接続
+			ResultSet rs = smt.executeQuery(sql);
+
+			//返却用オブジェクトに取得した情報を格納
+			while(rs.next()) {
+				question.setNum(rs.getInt("num"));
+				question.setName(rs.getString("name"));
+				question.setAge(rs.getString("age"));
+				question.setSex(rs.getString("sex"));
+				question.setAdress(rs.getString("adress"));
+				question.setMail(rs.getString("mail"));
+				question.setSelected(rs.getString("selected"));
+				question.setText(rs.getString("text"));
+				question.setDate(rs.getString("date"));
+			}
+
+		} catch(Exception e) {
+			throw new IllegalStateException(e);
+
+		} finally {
+			if(smt != null) {
+				try {smt.close();} catch(SQLException ignore) {}
+			}
+
+			if(con != null) {
+				try {con.close();} catch(SQLException ignore) {}
+			}
+		}
+
+		//返却
+		return question;
 	}
 
 	/**
@@ -143,8 +173,8 @@ public class questionDAO {
 				} catch (SQLException ignore) {
 				}
 			}
-
 		}
-
 	}
 }
+
+
